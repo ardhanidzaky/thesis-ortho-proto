@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 from pathlib import Path
 
-from src.classifier_service import classify_image, classify_front_image, classify_smile_image
+from src.classifier_service import classify_image, classify_front_image, classify_smile_image, classify_sides_image
 
 UPLOAD_DIR = Path() / 'uploads'
 
@@ -48,7 +48,7 @@ async def classifier_endpoint(file_upload: UploadFile):
         image_path = str(save_to)
         print(image_path)
         print('2')
-        results = classify_smile_image(image_path)
+        results = classify_sides_image(image_path)
         print('3')
 
         return {

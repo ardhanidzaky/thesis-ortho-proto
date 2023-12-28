@@ -26,3 +26,15 @@ GARIS_MULUT = {
     , 1: 'Sedang'
     , 2: 'Tinggi'
 }
+
+PROFIL_WAJAH = {
+    0: 'Cekung'
+    , 1: 'Cembung'
+    , 2: 'Lurus'
+}
+
+MESO_NESO = {
+    0: 'Normal'
+    , 1: 'Tajam'
+    , 2: 'Tumpul'
+}

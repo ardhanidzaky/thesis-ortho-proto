@@ -1,6 +1,6 @@
 import torch
 
-from src.utils import get_models, prep_image_for_inference
+from src.utils import get_models, prep_image_for_inference, prep_image_for_inference_side
 from const import *
 
 MODELS_DICT = {
@@ -19,7 +19,9 @@ MODELS_DICT = {
     }
 
     , 'Side': {
-        'None': None
+        'Profil': get_models('profil', 3)
+        , 'Nasolabial': get_models('nasolabial', 3)
+        , 'Mentolabial': get_models('mentolabial', 3)
     }
 }
 
@@ -73,8 +75,21 @@ def classify_smile_image(image_path):
         , 'Garis Mulut': GARIS_MULUT[predicted_garis.item()]
     }
 
-def classify_sides_image():
-    return 'Nice'
+def classify_sides_image(image_path):
+    print('2a')
+    image = prep_image_for_inference_side(image_path)
+    print('2b')
+
+    predicted_profil = model_predict(MODELS_DICT['Side']['Profil'], image)
+    print('2c')
+    predicted_nasolabial = model_predict(MODELS_DICT['Side']['Nasolabial'], image)
+    predicted_mentolabial = model_predict(MODELS_DICT['Side']['Mentolabial'], image)
+
+    return {
+        'Profil Wajah': PROFIL_WAJAH[predicted_profil.item()]
+        , 'Sudut Nasolabial': MESO_NESO[predicted_nasolabial.item()]
+        , 'Sudut Mentolabial': MESO_NESO[predicted_mentolabial.item()]
+    }
 
 def model_predict(model, image):
     print('2d')

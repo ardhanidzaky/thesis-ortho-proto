@@ -6,13 +6,16 @@ from const import *
 MODELS_DICT = {
     'Front': {
         'Tipe': get_models('tipe', 3)
-        , 'Simetris': get_models('simetri', 2)
+        , 'Simetris': get_models('simetris', 2)
         , 'Horizontal': get_models('horizontal', 2)
         , 'Vertikal': get_models('vertikal', 2)
     }
 
     , 'Smile': {
-        'None': None
+        'Segaris': get_models('segaris', 3)
+        , 'Bukal': get_models('bukal', 3)
+        , 'Kurva': get_models('kurva', 3)
+        , 'Garis': get_models('garis', 3)
     }
 
     , 'Side': {
@@ -35,12 +38,15 @@ def classify_image(image_path, image_type):
         return 'Wrong image type!'
 
 def classify_front_image(image_path):
+    print('2a')
     image = prep_image_for_inference(image_path)
+    print('2b')
 
-    predicted_type = model_predict(MODELS_DICT['Front']['Tipe']['effnet'], image)
-    predicted_symmetry = model_predict(MODELS_DICT['Front']['Simetris']['effnet'], image)
-    predicted_horizontal = model_predict(MODELS_DICT['Front']['Horizontal']['effnet'], image)
-    predicted_vertikal = model_predict(MODELS_DICT['Front']['Vertikal']['effnet'], image)
+    predicted_type = model_predict(MODELS_DICT['Front']['Tipe'], image)
+    print('2c')
+    predicted_symmetry = model_predict(MODELS_DICT['Front']['Simetris'], image)
+    predicted_horizontal = model_predict(MODELS_DICT['Front']['Horizontal'], image)
+    predicted_vertikal = model_predict(MODELS_DICT['Front']['Vertikal'], image)
 
     return {
         'Tipe Wajah': TIPE_WAJAH[predicted_type.item()]
@@ -49,14 +55,31 @@ def classify_front_image(image_path):
         , 'Vertikal Transversal': TIDAK_YA[predicted_vertikal.item()]
     }
 
-def classify_smile_image():
-    return 'Halo'
+def classify_smile_image(image_path):
+    print('2a')
+    image = prep_image_for_inference(image_path)
+    print('2b')
+
+    predicted_segaris = model_predict(MODELS_DICT['Smile']['Segaris'], image)
+    print('2c')
+    predicted_bukal = model_predict(MODELS_DICT['Smile']['Bukal'], image)
+    predicted_kurva = model_predict(MODELS_DICT['Smile']['Kurva'], image)
+    predicted_garis = model_predict(MODELS_DICT['Smile']['Garis'], image)
+
+    return {
+        'Wajah Segaris': TIDAK_YA[predicted_segaris.item()]
+        , 'Bukal Mulut': BUKAL_MULUT[predicted_bukal.item()]
+        , 'Kurva Mulut': KURVA_MULUT[predicted_kurva.item()]
+        , 'Garis Mulut': GARIS_MULUT[predicted_garis.item()]
+    }
 
 def classify_sides_image():
     return 'Nice'
 
 def model_predict(model, image):
+    print('2d')
     model.eval()
+    print('2e')
     outputs = model(image)
     _, predicted = torch.max(outputs, 1)
     

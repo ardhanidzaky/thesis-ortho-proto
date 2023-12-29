@@ -53,8 +53,8 @@ def classify_front_image(image_path):
     return {
         'Tipe Wajah': TIPE_WAJAH[predicted_type.item()]
         , 'Simetris Wajah': TIDAK_YA[predicted_symmetry.item()]
-        , 'Horizontal Transversal': TIDAK_YA[predicted_horizontal.item()]
-        , 'Vertikal Transversal': TIDAK_YA[predicted_vertikal.item()]
+        , 'Keseimbangan Transversal': TIDAK_YA[predicted_horizontal.item()]
+        , 'Keseimbangan Vertikal': TIDAK_YA[predicted_vertikal.item()]
     }
 
 def classify_smile_image(image_path):
@@ -69,10 +69,10 @@ def classify_smile_image(image_path):
     predicted_garis = model_predict(MODELS_DICT['Smile']['Garis'], image)
 
     return {
-        'Wajah Segaris': TIDAK_YA[predicted_segaris.item()]
-        , 'Bukal Mulut': BUKAL_MULUT[predicted_bukal.item()]
-        , 'Kurva Mulut': KURVA_MULUT[predicted_kurva.item()]
-        , 'Garis Mulut': GARIS_MULUT[predicted_garis.item()]
+        'Garis Midline Wajah': TIDAK_YA[predicted_segaris.item()]
+        , 'Bukal Koridor': BUKAL_MULUT[predicted_bukal.item()]
+        , 'Kurva Senyum': KURVA_MULUT[predicted_kurva.item()]
+        , 'Garis Senyum': GARIS_MULUT[predicted_garis.item()]
     }
 
 def classify_sides_image(image_path):
@@ -87,8 +87,8 @@ def classify_sides_image(image_path):
 
     return {
         'Profil Wajah': PROFIL_WAJAH[predicted_profil.item()]
-        , 'Sudut Nasolabial': MESO_NESO[predicted_nasolabial.item()]
         , 'Sudut Mentolabial': MESO_NESO[predicted_mentolabial.item()]
+        , 'Sudut Nasolabial': MESO_NESO[predicted_nasolabial.item()]
     }
 
 def model_predict(model, image):

@@ -1,11 +1,9 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI,  UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-
-from typing import List
 from pathlib import Path
 
-from src.classifier_service import classify_image, classify_front_image, classify_smile_image, classify_sides_image
+from src.classifier_service import classify_front_image, classify_smile_image, classify_sides_image
 
 UPLOAD_DIR = Path() / 'uploads'
 

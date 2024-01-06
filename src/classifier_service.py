@@ -3,6 +3,8 @@ import torch
 from src.utils import get_models, prep_image_for_inference, prep_image_for_inference_side
 from const import *
 
+from src.lime_service import lime_for_sides, lime_for_frontal
+
 MODELS_DICT = {
     'Front': {
         'Tipe': get_models('tipe', 3)
@@ -25,30 +27,16 @@ MODELS_DICT = {
     }
 }
 
-def classify_image(image_path, image_type):
-    # <TODO: Write codes to direct image to each model.>
-    model = None
-
-    try:
-        if image_type == 'front':
-            return classify_front_image()
-        elif image_type == 'smile':
-            return classify_smile_image()
-        else:
-            return classify_sides_image()
-    except:
-        return 'Wrong image type!'
-
 def classify_front_image(image_path):
     print('2a')
     image = prep_image_for_inference(image_path)
     print('2b')
 
-    predicted_type = model_predict(MODELS_DICT['Front']['Tipe'], image)
+    predicted_type, lime_result1 = model_predict(MODELS_DICT['Front']['Tipe'], image, 'front', image_path, 'Tipe')
     print('2c')
-    predicted_symmetry = model_predict(MODELS_DICT['Front']['Simetris'], image)
-    predicted_horizontal = model_predict(MODELS_DICT['Front']['Horizontal'], image)
-    predicted_vertikal = model_predict(MODELS_DICT['Front']['Vertikal'], image)
+    predicted_symmetry, lime_result2 = model_predict(MODELS_DICT['Front']['Simetris'], image, 'front', image_path, 'Simetris')
+    predicted_horizontal, lime_result3 = model_predict(MODELS_DICT['Front']['Horizontal'], image, 'front', image_path, 'Horizontal')
+    predicted_vertikal, lime_result4 = model_predict(MODELS_DICT['Front']['Vertikal'], image, 'front', image_path, 'Vertikal')
 
     return {
         'Tipe Wajah': TIPE_WAJAH[predicted_type.item()]
@@ -62,11 +50,14 @@ def classify_smile_image(image_path):
     image = prep_image_for_inference(image_path)
     print('2b')
 
-    predicted_segaris = model_predict(MODELS_DICT['Smile']['Segaris'], image)
+    predicted_segaris, lime_result1 = model_predict(MODELS_DICT['Smile']['Segaris'], image, 'front', image_path, 'Segaris')
     print('2c')
-    predicted_bukal = model_predict(MODELS_DICT['Smile']['Bukal'], image)
-    predicted_kurva = model_predict(MODELS_DICT['Smile']['Kurva'], image)
-    predicted_garis = model_predict(MODELS_DICT['Smile']['Garis'], image)
+    predicted_bukal, lime_result2 = model_predict(MODELS_DICT['Smile']['Bukal'], image, 'front', image_path, 'Bukal')
+    print('2ca')
+    predicted_kurva, lime_result3 = model_predict(MODELS_DICT['Smile']['Kurva'], image, 'front', image_path, 'Kurva')
+    print('2cb')
+    predicted_garis, lime_result4 = model_predict(MODELS_DICT['Smile']['Garis'], image, 'front', image_path, 'Garis')
+    print('2cd')
 
     return {
         'Garis Midline Wajah': TIDAK_YA[predicted_segaris.item()]
@@ -80,10 +71,10 @@ def classify_sides_image(image_path):
     image = prep_image_for_inference_side(image_path)
     print('2b')
 
-    predicted_profil = model_predict(MODELS_DICT['Side']['Profil'], image)
+    predicted_profil, lime_result1 = model_predict(MODELS_DICT['Side']['Profil'], image, 'side', image_path, 'Profil')
     print('2c')
-    predicted_nasolabial = model_predict(MODELS_DICT['Side']['Nasolabial'], image)
-    predicted_mentolabial = model_predict(MODELS_DICT['Side']['Mentolabial'], image)
+    predicted_nasolabial, lime_result2 = model_predict(MODELS_DICT['Side']['Nasolabial'], image, 'side', image_path, 'Mentolabial')
+    predicted_mentolabial, lime_result3 = model_predict(MODELS_DICT['Side']['Mentolabial'], image, 'side', image_path, 'Nasolabial')
 
     return {
         'Profil Wajah': PROFIL_WAJAH[predicted_profil.item()]
@@ -91,13 +82,21 @@ def classify_sides_image(image_path):
         , 'Sudut Nasolabial': MESO_NESO[predicted_nasolabial.item()]
     }
 
-def model_predict(model, image):
+def model_predict(model, image, angle, image_path, file_naming):
     print('2d')
     model.eval()
     print('2e')
     outputs = model(image)
     _, predicted = torch.max(outputs, 1)
+
+    # Call LIME
+    if angle == 'front':
+        print('Lime 1')
+        lime_result = lime_for_frontal(model, image_path, file_naming)
+    else:
+        print('Lime 1')
+        lime_result = lime_for_sides(model, image_path, file_naming)
     
-    return predicted
+    return predicted, lime_result
 
     

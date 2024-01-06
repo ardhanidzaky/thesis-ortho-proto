@@ -1,15 +1,13 @@
-import PIL
 from PIL import Image
 
 import torch as tr
 import torch.nn as nn
 
-import torchvision
 import torchvision.transforms as T
 import torchvision.models as models
 
 import cv2
-
+import os
 import dlib
 
 #####===== Image Preparation =====#####
@@ -130,3 +128,74 @@ def load_shuffle_net(output_size):
     model.add_module('fc', nn.Linear(temp_model.fc.in_features, output_size))
 
     return model
+
+#####===== LIME =====#####
+
+def get_image_frontal(path):
+    with open(os.path.abspath(path), 'rb') as f:
+        image = cv2.imread(path)
+        image_rb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        
+        face_cascade = cv2.CascadeClassifier("assets/haarcascade_frontalface.xml")
+        faces = face_cascade.detectMultiScale(image, scaleFactor=1.1, minNeighbors=5)
+        x, y, w, h = faces[0]
+
+        image_cropped = image_rb[y:y+h, x:x+w]
+        image_cropped_resized = cv2.resize(image_cropped, (400, 400))
+        
+        return Image.fromarray(image_cropped_resized)
+
+def get_image_sides(path):
+    with open(os.path.abspath(path), 'rb') as f:
+        width, height = 400, 400
+        image = cv2.imread(path)
+        image_fl = cv2.flip(image, 1)
+
+        # For faster inference, resize to the largest 3:4 ratio we will use
+        image_fl = cv2.resize(image_fl, (600, 800))
+        image_rb = cv2.cvtColor(image_fl, cv2.COLOR_BGR2RGB)
+
+        detector = dlib.cnn_face_detection_model_v1("assets/mmod_human_face_detector.dat")
+        faces = detector(image_fl)
+
+        # If used
+        desired_aspect_ratio = 3 / 4
+
+        box_enlarge_factor = 1.5
+        face = faces[0]
+
+        center_x = int((face.rect.left() + face.rect.right()) / 2)
+        center_y = int((face.rect.top() + face.rect.bottom()) / 2)
+
+        if width != height:
+            temp_width = int((face.rect.right() - face.rect.left()) * box_enlarge_factor)
+            temp_height = int(temp_width / desired_aspect_ratio)
+        else:
+            temp_width = int((face.rect.right() - face.rect.left()) * box_enlarge_factor)
+            temp_height = int((face.rect.bottom() - face.rect.top()) * box_enlarge_factor)
+
+        # Calculate new coordinates for the square bounding box
+        x1 = max(0, center_x - temp_width // 2)
+        y1 = max(0, center_y - temp_height // 2)
+        x2 = min(600, center_x + temp_width // 2)
+        y2 = min(800, center_y + temp_height // 2)
+            
+        new_image = image_rb[y1:y2, x1:x2]
+        new_image = cv2.resize(new_image, (width, height))
+        
+        return Image.fromarray(new_image)
+
+def get_pil_transform(): 
+    transf = T.Compose([
+        T.Resize((400, 400))
+    ])    
+
+    return transf
+
+def get_preprocess_transform():
+    transf = T.Compose([
+        T.ToTensor(),
+        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Use the ImageNet mean and std
+    ])    
+
+    return transf    
